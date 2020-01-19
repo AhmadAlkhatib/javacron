@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * object can be obtain by using the static {@link create} method, which parses
  * a crontab expression and creates a Schedule object.
  *
- * @author Ahmed AlSahaf
+ * @author Ahmed AlSahaf 
  */
 public class Schedule implements Comparable<Schedule> {
 
@@ -22,16 +22,13 @@ public class Schedule implements Comparable<Schedule> {
         INTERSECT, UNION
     }
 
+    // ! 6 different parsers for each field seems a little bit counter-intuitive man
     private final static CronFieldParser SECONDS_FIELD_PARSER = new CronFieldParser(CronFieldType.SECOND);
     private final static CronFieldParser MINUTES_FIELD_PARSER = new CronFieldParser(CronFieldType.MINUTE);
     private final static CronFieldParser HOURS_FIELD_PARSER = new CronFieldParser(CronFieldType.HOUR);
     private final static CronFieldParser DAYS_FIELD_PARSER = new CronFieldParser(CronFieldType.DAY);
     private final static CronFieldParser MONTHS_FIELD_PARSER = new CronFieldParser(CronFieldType.MONTH);
     private final static CronFieldParser DAY_OF_WEEK_FIELD_PARSER = new CronFieldParser(CronFieldType.DAY_OF_WEEK);
-
-    private Schedule() {
-    }
-
     private String expression;
     private boolean hasSecondsField;
     private DaysAndDaysOfWeekRelation daysAndDaysOfWeekRelation;
@@ -42,6 +39,9 @@ public class Schedule implements Comparable<Schedule> {
     private BitSet months;
     private BitSet daysOfWeek;
     private BitSet daysOf5Weeks;
+
+    private Schedule() {
+    }
 
     /**
      * Parses crontab expression and create a Schedule object representing that
@@ -91,19 +91,24 @@ public class Schedule implements Comparable<Schedule> {
      *                                    never occurs.
      */
     public static Schedule create(String expression) throws InvalidExpressionException {
+
         if (expression.isEmpty()) {
             throw new InvalidExpressionException("empty expression");
         }
+        
+        // get cronExpression fields --> split on whitespaces 
         String[] fields = expression.trim().toLowerCase().split("\\s+");
         int count = fields.length;
         if (count > 6 || count < 5) {
             throw new InvalidExpressionException(
                     "crontab expression should have 6 fields for (seconds resolution) or 5 fields for (minutes resolution)");
         }
+        
         Schedule schedule = new Schedule();
         schedule.hasSecondsField = count == 6;
         String token;
         int index = 0;
+        
         if (schedule.hasSecondsField) {
             token = fields[index++];
             schedule.seconds = Schedule.SECONDS_FIELD_PARSER.parse(token);

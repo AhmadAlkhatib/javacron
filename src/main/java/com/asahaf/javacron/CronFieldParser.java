@@ -53,16 +53,18 @@ class CronFieldParser {
     }
 
     private CronFieldType fieldType;
-    private Map<String, Integer> choices;
+    private Map<String, Integer> choices; // used for MONTHS_NAME and DAYS_OF_WEEK_NAMES
     private int length;
     private int maxAllowedValue;
     private int minAllowedValue;
     private String fieldName;
 
+    // since the class parses one field, choices map can either be MONTHS_NAMES
+    // or DAYS_OF_WEEK_NAMES at any given time, it cannot be both. 
     CronFieldParser(CronFieldType fieldType) {
         this.fieldType = fieldType;
         switch (fieldType) {
-        case SECOND:
+        case SECOND: // fine case of swich fallback!
         case MINUTE:
             this.fieldName = this.fieldType.toString().toLowerCase();
             this.length = 60;
@@ -101,19 +103,15 @@ class CronFieldParser {
     public CronFieldType getFieldType() {
         return fieldType;
     }
-
     public int getMaxAllowedValue() {
         return maxAllowedValue;
     }
-
     public int getMinAllowedValue() {
         return minAllowedValue;
     }
-
     public int getLength() {
         return this.length;
     }
-
     private boolean isInteger(String str) {
         try {
             Integer.parseInt(str);
@@ -122,7 +120,8 @@ class CronFieldParser {
             return false;
         }
     }
-
+    
+    // Get the integer value from the map given a month or a day
     private int getChoiceNumber(String choice) {
         if (!this.choices.containsKey(choice)) {
             return -1;
@@ -130,21 +129,8 @@ class CronFieldParser {
         return this.choices.get(choice);
     }
 
-    private int parseValue(String token) {
-        int value = -1;
-        if (this.choices != null) {
-            if (this.isInteger(token)) {
-                value = Integer.parseInt(token);
-            } else {
-                value = this.getChoiceNumber(token);
-            }
-        } else {
-            value = Integer.parseInt(token);
-        }
-        return value;
-    }
-
     public BitSet parse(String token) throws InvalidExpressionException {
+        
         if (token.indexOf(",") > -1) {
             BitSet bitSet = new BitSet(this.length);
             String[] items = token.split(",");
@@ -252,6 +238,7 @@ class CronFieldParser {
     }
 
     private BitSet parseLiteral(String token) throws InvalidExpressionException {
+
         BitSet bitSet = new BitSet(this.length);
         try {
             int number = this.parseValue(token);
@@ -269,10 +256,27 @@ class CronFieldParser {
                         String.format("invalid %s field: \"%s\". maximum allowed value for %s field is \"%d\"",
                                 this.fieldName, token, this.fieldName, this.maxAllowedValue));
             }
+            
+            //! 28 lines of exceptions, core logic is here!!. JAVA IN A NUTSHELL!!
             bitSet.set(number - this.minAllowedValue);
+
         } catch (NumberFormatException ex) {
             throw new InvalidExpressionException(String.format("invalid %s field: \"%s\"", this.fieldName, token), ex);
         }
         return bitSet;
+    }
+
+    private int parseValue(String token) {
+        int value = -1;
+        if (this.choices != null) {
+            if (this.isInteger(token)) {
+                value = Integer.parseInt(token);
+            } else {
+                value = this.getChoiceNumber(token);
+            }
+        } else {
+            value = Integer.parseInt(token);
+        }
+        return value;
     }
 }
