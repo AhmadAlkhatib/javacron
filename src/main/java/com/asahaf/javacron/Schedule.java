@@ -22,7 +22,8 @@ public class Schedule implements Comparable<Schedule> {
         INTERSECT, UNION
     }
 
-    // ! 6 different parsers for each field seems a little bit counter-intuitive man
+    // ! 6 different parsers for each field seems a little bit counter-intuitive... I'm gonna 
+    // ! go back to check if my initial judgment hold true later!!
     private final static CronFieldParser SECONDS_FIELD_PARSER = new CronFieldParser(CronFieldType.SECOND);
     private final static CronFieldParser MINUTES_FIELD_PARSER = new CronFieldParser(CronFieldType.MINUTE);
     private final static CronFieldParser HOURS_FIELD_PARSER = new CronFieldParser(CronFieldType.HOUR);
